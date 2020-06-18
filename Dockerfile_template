@@ -1,0 +1,5 @@
+FROM sharelatex/sharelatex:latest
+
+#ENTRYPOINT ["/bin/bash","-c","sleep","10000"]
+#ENTRYPOINT ["sleep","10000"]
+

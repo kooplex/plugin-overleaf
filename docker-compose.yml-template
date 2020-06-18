@@ -1,0 +1,131 @@
+version: "3"
+
+services:
+  ##PREFIX##-overleaf:
+    image: ##PREFIX##-overleaf
+    container_name: ##PREFIX##-overleaf
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - ##PREFIX##-net
+      - ##PREFIX##-overleaf-net
+    depends_on:
+      - mongo
+#        -  condition: service_healthy
+      - redis
+#        -  condition: service_started
+    ports:
+        - 8080:80
+    links:
+        - mongo
+        - redis
+    volumes:
+      - ##PREFIX##-overleaf-data:/var/lib/sharelatex/:rw      
+      - ##PREFIX##-overleaf-log:/var/log/nginx/:rw      
+    environment:
+#      - SHARELATEX_MONGO_URL=mongodb://##PREFIX##-overleaf-mongo/sharelatex
+      - SHARELATEX_MONGO_URL=mongodb://mongo/sharelatex
+#      - SHARELATEX_REDIS_HOST=##PREFIX##-overleaf-redis
+      - SHARELATEX_REDIS_HOST=redis
+#      - REDIS_HOST=##PREFIX##-overleaf-redis
+      - REDIS_HOST=redis
+      - SHARELATEX_APP_NAME=KOOPLEXShareLaTeX
+#      - SHARELATEX_SITE_URL=##REWRITEPROTO##://##OUTERHOST##:8080
+      - SHARELATEX_SITE_URL=##OUTERHOST##:8080
+      - SHARELATEX_BEHIND_PROXY=true 
+      - SHARELATEX_ADMIN_EMAIL=admin@gmail.com
+      - SHARELATEX_SESSION_SECRET=true
+#      - SHARELATEX_SECURE_COOKIE=true
+      - VIRTUAL_HOST=kooplex-deploy.elte.hu
+      - VIRTUAL_PORT=80
+      # SHARELATEX_EMAIL_FROM_ADDRESS="team@kooplexlatex.com"
+      # SHARELATEX_EMAIL_SMTP_HOST=
+      # SHARELATEX_EMAIL_SMTP_PORT=25
+      # SHARELATEX_EMAIL_SMTP_SECURE=false
+      # SHARELATEX_EMAIL_SMTP_USER= 
+      # SHARELATEX_EMAIL_SMTP_PASS: 
+      # SHARELATEX_EMAIL_SMTP_TLS_REJECT_UNAUTH: true
+      # SHARELATEX_EMAIL_SMTP_IGNORE_TLS: false
+      # SHARELATEX_CUSTOM_EMAIL_FOOTER: "<div>This system is run by department x </div>"
+      ## Set for SSL via nginx-proxy
+      #VIRTUAL_HOST: 103.112.212.22
+
+       # SHARELATEX_NAV_TITLE: Our ShareLaTeX Instance
+       # SHARELATEX_HEADER_IMAGE_URL: http://somewhere.com/mylogo.png
+
+       # SHARELATEX_LEFT_FOOTER: '[{"text": "Powered by <a href=\"https://www.sharelatex.com\">ShareLaTeX</a> 2016"},{"text": "Another page I want to link to can be found <a href=\"here\">here</a>"} ]'
+       # SHARELATEX_RIGHT_FOOTER: '[{"text": "Hello I am on the Right"} ]'
+
+
+       ################
+       ## Server Pro ##
+       ################
+
+       # SANDBOXED_COMPILES: 'true'
+       
+       # SANDBOXED_COMPILES_SIBLING_CONTAINERS: 'true'
+       # SANDBOXED_COMPILES_HOST_DIR: '/var/clsi/compiles'
+
+       ## Works with test LDAP server shown at bottom of docker compose
+       # SHARELATEX_LDAP_URL: 'ldap://ldap:389'
+       # SHARELATEX_LDAP_SEARCH_BASE: 'ou=people,dc=planetexpress,dc=com'
+       # SHARELATEX_LDAP_SEARCH_FILTER: '(uid={{username}})'
+       # SHARELATEX_LDAP_BIND_DN: 'cn=admin,dc=planetexpress,dc=com'
+       # SHARELATEX_LDAP_BIND_CREDENTIALS: 'GoodNewsEveryone'
+       # SHARELATEX_LDAP_EMAIL_ATT: 'mail'
+       # SHARELATEX_LDAP_NAME_ATT: 'cn'
+       # SHARELATEX_LDAP_LAST_NAME_ATT: 'sn'
+       # SHARELATEX_LDAP_UPDATE_USER_DETAILS_ON_LOGIN: 'true'
+
+       # SHARELATEX_TEMPLATES_USER_ID: "578773160210479700917ee5"
+
+       # SHARELATEX_PROXY_LEARN: "true"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  mongo:
+    image: mongo
+#    container_name: ##PREFIX##-overleaf-mongo
+    container_name: mongo
+    restart: unless-stopped
+    expose:
+        - 27017
+    volumes:
+        - ##PREFIX##-overleaf-mongo_data:/data/db
+    networks:
+      - ##PREFIX##-overleaf-net
+
+  redis:
+    restart: unless-stopped
+    image: redis:5
+#    container_name: ##PREFIX##-overleaf-redis
+    container_name: redis
+    expose:
+        - 6379
+    volumes:
+        - ##PREFIX##-overleaf-redis_data:/data
+    networks:
+      - ##PREFIX##-overleaf-net
+
+
+networks:
+  ##PREFIX##-net:
+    external: true
+  ##PREFIX##-overleaf-net:
+    external: false
+
+volumes:
+  ##PREFIX##-overleaf-data:
+    external: true
+  ##PREFIX##-overleaf-log:
+    external: true
+  ##PREFIX##-overleaf-redis_data:
+    external: true
+  ##PREFIX##-overleaf-mongo_data:
+    external: true
+
+
